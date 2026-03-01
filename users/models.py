@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class Confirm(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return self.user.email

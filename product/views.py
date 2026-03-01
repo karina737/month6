@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view as shop_api
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Product, Category, Review
-from django.db import transaction
 from .serializers import (CategoryListSerializer, 
                           ProductListSerializer, 
                           ReviewListSerializer, 
@@ -11,21 +10,31 @@ from .serializers import (CategoryListSerializer,
                           ProductDetailSerializer,
                           ReviewDetailSerializer,
                           ProductReviewsSerializer,
-                          CategoryValidateSerializer,
-                          ProductValidateSerializer,
-                          ReviewValidateSerializer)
+                          ProductCreateSerializer)
+                
 from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
-
+from common.permissions import IsOwner, IsAnonymous, CanEditSomeTime, IsModerator
 class CategoryListAPIView(ListCreateAPIView):
     serializer_class=CategoryListSerializer
     queryset=Category.objects.all()
     pagination_class=PageNumberPagination
     
 class ProductListAPIView(ListCreateAPIView):
-    serializer_class=ProductListSerializer
-    queryset=Product.objects.all()
-    pagination_class=PageNumberPagination
+    queryset = Product.objects.all()
+    pagination_class = PageNumberPagination
+    permission_classes = [ IsOwner | IsAnonymous, IsModerator]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ProductCreateSerializer
+        return ProductListSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)  
     
 class ReviewListAPIView(ListCreateAPIView):
     serializer_class=ReviewListSerializer
@@ -40,11 +49,14 @@ class CategoryDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class=CategoryDetailSerializer
     queryset=Category.objects.all()
     lookup_field='id'
+    permission_classes=[IsOwner | IsAnonymous | IsModerator]
  
+
 class ProductDetailAPIView(RetrieveUpdateDestroyAPIView):
-    serializer_class=ProductDetailSerializer
-    queryset=Product.objects.all()
-    lookup_field='id'
+    serializer_class = ProductDetailSerializer
+    queryset = Product.objects.all()
+    lookup_field = 'id'
+    permission_classes = [ (IsOwner | IsAnonymous | IsModerator), CanEditSomeTime] 
     
 class ReviewDetailAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class=ReviewDetailSerializer
