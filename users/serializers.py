@@ -2,16 +2,31 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 import random
 from .models import Confirm, CustomUser
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token["email"] = user.email
+        token["is_staff"] = user.is_staff
+        token["birthdate"] = user.birthdate.isoformat() if user.birthdate else None
+
+        return token
 
 class RegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    birthdate = serializers.CharField(required=False, allow_null=True)
     password = serializers.CharField()
 
     def create(self, validated_data):
         user = CustomUser(
             email=validated_data["email"],
             phone_number=validated_data.get("phone_number") or None,
+            birthdate=validated_data.get("birthdate"),
             is_active=False
         )
         user.set_password(validated_data["password"])

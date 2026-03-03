@@ -23,7 +23,7 @@ class CategoryListAPIView(ListCreateAPIView):
 class ProductListAPIView(ListCreateAPIView):
     queryset = Product.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = [ IsOwner | IsAnonymous, IsModerator]
+    permission_classes = [ IsOwner | IsAnonymous | IsModerator]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':

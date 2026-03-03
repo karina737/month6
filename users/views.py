@@ -6,6 +6,13 @@ from .models import Confirm
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.views import TokenObtainPairView
+from users.serializers import CustomTokenObtainPairSerializer
+
+
+class CUstomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
 
 class RegisterAPIView(APIView):
      @swagger_auto_schema(request_body=RegisterSerializer)

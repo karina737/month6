@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Category, Product, Review
 from rest_framework.exceptions import ValidationError
+from common.validators import validator_birthdate
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
@@ -25,6 +26,12 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['title', 'description', 'price', 'category']
+   
+    def validate(self, attrs):
+        request = self.context.get("request")
+        if request and request.method == "POST":
+                validator_birthdate(request)
+        return attrs
   
 class ReviewListSerializer(serializers.ModelSerializer):
     class Meta:
