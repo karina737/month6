@@ -4,6 +4,8 @@ import random
 from .models import Confirm, CustomUser
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+class OAuthCodeSerializer(serializers.Serializer):
+    code = serializers.CharField()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
