@@ -9,22 +9,28 @@ from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.serializers import CustomTokenObtainPairSerializer
 from django.core.cache import cache
+# from users.tasks import send_otp
+from users.tasks import send_welcome_email, long_running_task
+
 
 
 class CUstomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-
 class RegisterAPIView(APIView):
-     @swagger_auto_schema(request_body=RegisterSerializer)
-     def post (self, request):
-      serializer = RegisterSerializer(data=request.data)
-      serializer.is_valid(raise_exception=True)
-      result = serializer.save()
-      return Response({
-        "message": "User created",
-        "code": result["code"]
-    })
+    @swagger_auto_schema(request_body=RegisterSerializer)
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        user = result["user"]
+        code = result["code"]
+        send_welcome_email.delay(user.email)
+        long_running_task.delay(20)
+        return Response({
+            "message": "User created",
+            "code": code
+        })
 class ConfirmAPIView(APIView):
     @swagger_auto_schema(request_body=ConfirmSerializer)
     def post(self, request):
